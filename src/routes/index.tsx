@@ -19,10 +19,10 @@ export const Route = createFileRoute("/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "WallVault — Beautiful 4K Wallpapers for Your Phone" },
-      { name: "description", content: "Browse and download stunning 4K and HD phone wallpapers. Free, fast, and beautifully curated." },
-      { property: "og:title", content: "WallVault — 4K Phone Wallpapers" },
-      { property: "og:description", content: "Free curated phone wallpapers in multiple resolutions." },
+      { title: "Unposed — A Quiet Wallpaper Journal" },
+      { name: "description", content: "An editorial collection of wallpapers in 4K and HD. Free, curated, and quietly beautiful." },
+      { property: "og:title", content: "Unposed — Editorial Wallpapers" },
+      { property: "og:description", content: "A quiet, editorial collection of wallpapers." },
     ],
   }),
   component: GalleryPage,
@@ -39,7 +39,8 @@ function GalleryPage() {
   useEffect(() => {
     const t = setTimeout(() => {
       if (searchInput !== q) {
-        navigate({ search: (prev) => ({ ...prev, q: searchInput }) });
+        const updater = (prev: z.infer<typeof searchSchema>) => ({ ...prev, q: searchInput });
+        navigate({ search: updater });
       }
     }, 300);
     return () => clearTimeout(t);
@@ -81,26 +82,30 @@ function GalleryPage() {
   }, [imagesQuery]);
 
   const setSearch = (patch: Partial<{ q: string; cat: string; sort: "newest" | "popular" | "downloads" }>) => {
-    navigate({ search: (prev) => ({ ...prev, ...patch }) });
+    const updater = (prev: z.infer<typeof searchSchema>) => ({ ...prev, ...patch });
+    navigate({ search: updater });
   };
 
   return (
     <div className="mx-auto max-w-7xl px-4 md:px-6">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-hero px-6 py-10 my-4 text-white shadow-glow md:px-12 md:py-16">
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
-            <Sparkles className="h-3 w-3" /> {statsQuery.data?.images ?? 0} wallpapers
-          </div>
-          <h1 className="mt-4 font-display text-3xl font-bold leading-tight md:text-5xl">
-            Stunning wallpapers,<br />
-            <span className="opacity-80">crafted for your screen.</span>
-          </h1>
-          <p className="mt-3 max-w-md text-sm text-white/85 md:text-base">
-            Free 4K & HD downloads. Curated daily.
-          </p>
+      {/* Editorial masthead */}
+      <section className="border-b border-border px-2 py-12 md:py-20">
+        <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          <span className="inline-flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3" /> Issue · {new Date().getFullYear()}
+          </span>
+          <span className="h-px flex-1 bg-border" />
         </div>
-        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <h1 className="mt-6 font-display text-5xl leading-[0.95] md:text-7xl">
+          Unposed.
+        </h1>
+        <p className="mt-4 max-w-xl font-display text-lg italic text-muted-foreground md:text-xl">
+          A quiet journal of wallpapers — unposed, unhurried, gently rendered for your screen.
+        </p>
+        <p className="mt-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          {statsQuery.data?.images ?? 0} entries · 4K · HD · Original
+        </p>
       </section>
 
       {/* Search */}

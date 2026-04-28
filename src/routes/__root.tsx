@@ -34,14 +34,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "WallVault — Beautiful 4K Wallpapers for Your Phone" },
-      { name: "description", content: "Discover and download stunning wallpapers in 4K, HD, and original quality. A curated collection of phone backgrounds — free, fast, and beautifully organized." },
-      { name: "author", content: "WallVault" },
-      { property: "og:title", content: "WallVault — Beautiful 4K Wallpapers" },
-      { property: "og:description", content: "Curated phone wallpapers in 4K and HD. Free downloads." },
+      { title: "Unposed — A Quiet Wallpaper Journal" },
+      { name: "description", content: "An editorial collection of unposed moments and quiet wallpapers in 4K, HD and original quality. Free, curated, and beautifully organized." },
+      { name: "author", content: "Unposed" },
+      { property: "og:title", content: "Unposed — Editorial Wallpapers" },
+      { property: "og:description", content: "A quiet, editorial collection of wallpapers in 4K and HD." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#0a0a14" },
+      { name: "theme-color", content: "#13110f" },
     ],
     links: [
       {
@@ -52,7 +52,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600&display=swap",
       },
     ],
   }),
@@ -88,7 +88,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-            <p>WallVault · curated wallpapers · {new Date().getFullYear()}</p>
+            <p><span className="font-display">Unposed</span> · a quiet wallpaper journal · {new Date().getFullYear()}</p>
           </footer>
         </div>
         <Toaster />
