@@ -99,8 +99,10 @@ function GalleryPage() {
     return () => io.disconnect();
   }, [imagesQuery]);
 
-  const setSearch = (patch: Partial<SearchParams>) =>
-    navigate({ search: (prev: SearchParams) => ({ ...prev, ...patch }) });
+  const setSearch = (patch: Partial<SearchParams>) => {
+    const updater = (prev: SearchParams): SearchParams => ({ ...prev, ...patch });
+    navigate({ search: updater });
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 md:px-8">
