@@ -62,30 +62,30 @@
 }
 
 :root {
-  /* WallVault — refined light */
-  --radius: 1rem;
-  --background: oklch(0.985 0.003 260);
-  --foreground: oklch(0.16 0.02 270);
+  /* Unposed — editorial light (paper) */
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.004 80);
+  --foreground: oklch(0.16 0.01 60);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.16 0.02 270);
+  --card-foreground: oklch(0.16 0.01 60);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.16 0.02 270);
-  --primary: oklch(0.22 0.04 280);
+  --popover-foreground: oklch(0.16 0.01 60);
+  --primary: oklch(0.18 0.01 60);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.005 270);
-  --secondary-foreground: oklch(0.22 0.04 280);
-  --muted: oklch(0.95 0.005 270);
-  --muted-foreground: oklch(0.5 0.015 270);
-  --accent: oklch(0.65 0.22 295);
+  --secondary: oklch(0.96 0.006 80);
+  --secondary-foreground: oklch(0.18 0.01 60);
+  --muted: oklch(0.95 0.005 80);
+  --muted-foreground: oklch(0.5 0.012 60);
+  --accent: oklch(0.18 0.01 60);
   --accent-foreground: oklch(0.99 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.91 0.005 270);
-  --input: oklch(0.91 0.005 270);
-  --ring: oklch(0.65 0.22 295);
-  --gradient-hero: linear-gradient(135deg, oklch(0.65 0.22 295) 0%, oklch(0.6 0.2 320) 50%, oklch(0.55 0.2 25) 100%);
+  --border: oklch(0.9 0.005 80);
+  --input: oklch(0.9 0.005 80);
+  --ring: oklch(0.4 0.01 60);
+  --gradient-hero: linear-gradient(135deg, oklch(0.18 0.01 60) 0%, oklch(0.28 0.015 50) 100%);
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.06), 0 4px 12px oklch(0 0 0 / 0.04);
-  --shadow-glow: 0 8px 32px oklch(0.65 0.22 295 / 0.25);
+  --shadow-glow: 0 8px 32px oklch(0 0 0 / 0.12);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -102,29 +102,29 @@
 }
 
 .dark {
-  /* WallVault — deep night (default for wallpaper site) */
-  --background: oklch(0.11 0.012 270);
-  --foreground: oklch(0.97 0.003 270);
-  --card: oklch(0.15 0.015 270);
-  --card-foreground: oklch(0.97 0.003 270);
-  --popover: oklch(0.13 0.015 270);
-  --popover-foreground: oklch(0.97 0.003 270);
-  --primary: oklch(0.97 0.003 270);
-  --primary-foreground: oklch(0.11 0.012 270);
-  --secondary: oklch(0.2 0.02 270);
-  --secondary-foreground: oklch(0.97 0.003 270);
-  --muted: oklch(0.2 0.02 270);
-  --muted-foreground: oklch(0.65 0.015 270);
-  --accent: oklch(0.7 0.22 300);
-  --accent-foreground: oklch(0.11 0.012 270);
+  /* Unposed — editorial dark (ink) */
+  --background: oklch(0.13 0.005 60);
+  --foreground: oklch(0.97 0.005 80);
+  --card: oklch(0.16 0.006 60);
+  --card-foreground: oklch(0.97 0.005 80);
+  --popover: oklch(0.15 0.006 60);
+  --popover-foreground: oklch(0.97 0.005 80);
+  --primary: oklch(0.97 0.005 80);
+  --primary-foreground: oklch(0.13 0.005 60);
+  --secondary: oklch(0.2 0.008 60);
+  --secondary-foreground: oklch(0.97 0.005 80);
+  --muted: oklch(0.2 0.008 60);
+  --muted-foreground: oklch(0.65 0.012 70);
+  --accent: oklch(0.97 0.005 80);
+  --accent-foreground: oklch(0.13 0.005 60);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.7 0.22 300);
-  --gradient-hero: linear-gradient(135deg, oklch(0.55 0.25 295) 0%, oklch(0.5 0.22 320) 50%, oklch(0.5 0.22 25) 100%);
+  --ring: oklch(0.8 0.005 80);
+  --gradient-hero: linear-gradient(135deg, oklch(0.16 0.006 60) 0%, oklch(0.22 0.008 50) 100%);
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px oklch(0 0 0 / 0.3);
-  --shadow-glow: 0 8px 32px oklch(0.7 0.22 300 / 0.35);
+  --shadow-glow: 0 8px 32px oklch(0 0 0 / 0.5);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -154,8 +154,9 @@
   }
 
   .font-display {
-    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
     letter-spacing: -0.02em;
+    font-style: italic;
   }
 
   .bg-gradient-hero { background: var(--gradient-hero); }

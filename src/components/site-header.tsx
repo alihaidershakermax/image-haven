@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Moon, Sun, LayoutGrid, Home, LogIn, Shield } from "lucide-react";
+import { Moon, Sun, Home, LogIn, Shield } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
@@ -21,10 +21,7 @@ export function SiteHeader() {
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-hero shadow-glow">
-              <LayoutGrid className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-display text-lg font-bold tracking-tight">WallVault</span>
+            <span className="font-display text-2xl tracking-tight">Unposed</span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm md:flex">
             <Link to="/" activeOptions={{ exact: true }}
