@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, Download } from "lucide-react";
 import type { GalleryImage } from "@/types/image";
 
 export function GalleryGrid({
@@ -9,15 +10,15 @@ export function GalleryGrid({
   onOpen: (img: GalleryImage) => void;
 }) {
   return (
-    <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4 [&>*]:mb-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
       {items.map((img, i) => (
-        <GalleryCard key={img.id} image={img} onOpen={onOpen} priority={i < 4} />
+        <WallpaperCard key={img.id} image={img} onOpen={onOpen} priority={i < 6} />
       ))}
     </div>
   );
 }
 
-function GalleryCard({
+function WallpaperCard({
   image,
   onOpen,
   priority,
@@ -27,30 +28,31 @@ function GalleryCard({
   priority: boolean;
 }) {
   const [loaded, setLoaded] = useState(false);
-  const ratio = image.width && image.height ? image.height / image.width : 0.66;
 
   return (
     <button
       onClick={() => onOpen(image)}
-      className="group block w-full break-inside-avoid overflow-hidden rounded-lg bg-muted text-left shadow-sm transition-all duration-300 hover:shadow-xl"
+      className="group relative block w-full overflow-hidden rounded-2xl bg-muted text-left shadow-soft transition-all duration-300 hover:shadow-glow active:scale-[0.98]"
+      style={{ aspectRatio: "9 / 16" }}
     >
-      <div className="relative overflow-hidden" style={{ paddingBottom: `${ratio * 100}%` }}>
-        <img
-          src={image.thumbnail_url ?? image.url}
-          alt={image.title}
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
-          onLoad={() => setLoaded(true)}
-          className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-out group-hover:scale-105 ${
-            loaded ? "opacity-100 blur-0" : "opacity-0 blur-md"
-          }`}
-        />
-      </div>
-      <div className="px-3 pb-3 pt-2">
-        <p className="font-serif text-sm leading-tight text-card-foreground">{image.title}</p>
-        <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {new Date(image.taken_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-        </p>
+      <img
+        src={image.url_thumb ?? image.thumbnail_url ?? image.url}
+        alt={image.title}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={`absolute inset-0 h-full w-full object-cover transition-all duration-500 ease-out group-hover:scale-105 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+      />
+      {/* gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-x-0 bottom-0 translate-y-2 p-3 text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <p className="line-clamp-1 text-sm font-medium">{image.title}</p>
+        <div className="mt-1 flex items-center gap-3 text-[11px] text-white/80">
+          <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{image.view_count}</span>
+          <span className="flex items-center gap-1"><Download className="h-3 w-3" />{image.download_count}</span>
+        </div>
       </div>
     </button>
   );
