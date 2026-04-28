@@ -14,13 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      images: {
+        Row: {
+          created_at: string
+          description: string | null
+          download_count: number
+          height: number | null
+          id: string
+          source: string
+          tags: string[]
+          taken_at: string
+          telegram_message_id: number | null
+          thumbnail_url: string | null
+          title: string
+          url: string
+          view_count: number
+          width: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          height?: number | null
+          id?: string
+          source?: string
+          tags?: string[]
+          taken_at?: string
+          telegram_message_id?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          url: string
+          view_count?: number
+          width?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          height?: number | null
+          id?: string
+          source?: string
+          tags?: string[]
+          taken_at?: string
+          telegram_message_id?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          url?: string
+          view_count?: number
+          width?: number | null
+        }
+        Relationships: []
+      }
+      telegram_bot_state: {
+        Row: {
+          id: number
+          update_offset: number
+          updated_at: string
+        }
+        Insert: {
+          id: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_image_download: {
+        Args: { image_id: string }
+        Returns: undefined
+      }
+      increment_image_view: { Args: { image_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
