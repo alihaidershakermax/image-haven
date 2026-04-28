@@ -3,39 +3,26 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
-import { listImages, listTags } from "@/server/images.functions";
+import { Search, X, Sparkles } from "lucide-react";
+import { listImages, listCategories, getOverallStats } from "@/server/images.functions";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { Lightbox } from "@/components/lightbox";
 import type { GalleryImage } from "@/types/image";
 
-type SearchParams = {
-  q: string;
-  tag: string;
-  range: "all" | "week" | "month" | "year";
-};
-
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
-  tag: fallback(z.string(), "").default(""),
-  range: fallback(z.enum(["all", "week", "month", "year"]), "all").default("all"),
+  cat: fallback(z.string(), "").default(""),
+  sort: fallback(z.enum(["newest", "popular", "downloads"]), "newest").default("newest"),
 });
 
 export const Route = createFileRoute("/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Frame — A quiet image journal" },
-      {
-        name: "description",
-        content:
-          "Browse a curated photographic gallery, fed quietly through Telegram. Search by subject, filter by date, and download in one click.",
-      },
-      { property: "og:title", content: "Frame — A quiet image journal" },
-      {
-        property: "og:description",
-        content: "A minimal, editorial gallery of photographs curated through Telegram.",
-      },
+      { title: "WallVault — Beautiful 4K Wallpapers for Your Phone" },
+      { name: "description", content: "Browse and download stunning 4K and HD phone wallpapers. Free, fast, and beautifully curated." },
+      { property: "og:title", content: "WallVault — 4K Phone Wallpapers" },
+      { property: "og:description", content: "Free curated phone wallpapers in multiple resolutions." },
     ],
   }),
   component: GalleryPage,
@@ -44,35 +31,30 @@ export const Route = createFileRoute("/")({
 const PAGE_SIZE = 18;
 
 function GalleryPage() {
-  const { q, tag, range } = Route.useSearch();
+  const { q, cat, sort } = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const [searchInput, setSearchInput] = useState(q);
   const [open, setOpen] = useState<GalleryImage | null>(null);
 
-  // Debounce search input -> URL
   useEffect(() => {
     const t = setTimeout(() => {
       if (searchInput !== q) {
-        navigate({ search: (prev: SearchParams) => ({ ...prev, q: searchInput }) });
+        navigate({ search: (prev) => ({ ...prev, q: searchInput }) });
       }
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
 
-  useEffect(() => {
-    setSearchInput(q);
-  }, [q]);
+  useEffect(() => { setSearchInput(q); }, [q]);
 
-  const tagsQuery = useQuery({
-    queryKey: ["tags"],
-    queryFn: () => listTags(),
-  });
+  const catsQuery = useQuery({ queryKey: ["categories"], queryFn: () => listCategories() });
+  const statsQuery = useQuery({ queryKey: ["stats"], queryFn: () => getOverallStats() });
 
   const imagesQuery = useInfiniteQuery({
-    queryKey: ["images", { q, tag, range }],
+    queryKey: ["images", { q, cat, sort }],
     queryFn: ({ pageParam = 0 }) =>
-      listImages({ data: { search: q, tag, range, page: pageParam, pageSize: PAGE_SIZE } }),
+      listImages({ data: { search: q, categorySlug: cat, sort, page: pageParam, pageSize: PAGE_SIZE } }),
     initialPageParam: 0,
     getNextPageParam: (last, all) => (last.hasMore ? all.length : undefined),
   });
@@ -83,7 +65,6 @@ function GalleryPage() {
   );
   const total = imagesQuery.data?.pages[0]?.total ?? 0;
 
-  // Infinite scroll sentinel
   useEffect(() => {
     const el = document.getElementById("infinite-sentinel");
     if (!el) return;
@@ -93,115 +74,81 @@ function GalleryPage() {
           imagesQuery.fetchNextPage();
         }
       },
-      { rootMargin: "600px" },
+      { rootMargin: "800px" },
     );
     io.observe(el);
     return () => io.disconnect();
   }, [imagesQuery]);
 
-  const setSearch = (patch: Partial<SearchParams>) => {
-    const updater = (prev: SearchParams): SearchParams => ({ ...prev, ...patch });
-    navigate({ search: updater });
+  const setSearch = (patch: Partial<{ q: string; cat: string; sort: "newest" | "popular" | "downloads" }>) => {
+    navigate({ search: (prev) => ({ ...prev, ...patch }) });
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 md:px-8">
+    <div className="mx-auto max-w-7xl px-4 md:px-6">
       {/* Hero */}
-      <section className="border-b border-border py-12 md:py-20">
-        <p className="font-serif text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          Issue · {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-        </p>
-        <h1 className="mt-4 font-serif text-4xl leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
-          A quiet collection of <em className="italic text-accent">photographs</em>,
-          <br className="hidden md:block" /> uploaded through Telegram.
-        </h1>
-        <p className="mt-6 max-w-xl text-base text-muted-foreground md:text-lg">
-          Send any image to the bot. It appears here, indexed by caption and hashtags. Click any frame to view full size or download.
-        </p>
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-hero px-6 py-10 my-4 text-white shadow-glow md:px-12 md:py-16">
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+            <Sparkles className="h-3 w-3" /> {statsQuery.data?.images ?? 0} wallpapers
+          </div>
+          <h1 className="mt-4 font-display text-3xl font-bold leading-tight md:text-5xl">
+            Stunning wallpapers,<br />
+            <span className="opacity-80">crafted for your screen.</span>
+          </h1>
+          <p className="mt-3 max-w-md text-sm text-white/85 md:text-base">
+            Free 4K & HD downloads. Curated daily.
+          </p>
+        </div>
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
       </section>
 
-      {/* Controls */}
-      <section className="sticky top-[57px] z-20 -mx-4 border-b border-border bg-background/90 px-4 py-4 backdrop-blur-md md:-mx-8 md:px-8">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="relative flex-1 md:max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search title or description…"
-              className="w-full rounded-full border border-border bg-card py-2 pl-10 pr-10 text-sm outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
-            />
-            {searchInput && (
-              <button
-                onClick={() => setSearchInput("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Clear"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 text-xs">
-            {(["all", "week", "month", "year"] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setSearch({ range: r })}
-                className={`rounded-full border px-3 py-1.5 uppercase tracking-wider transition-colors ${
-                  range === r
-                    ? "border-foreground bg-foreground text-background"
-                    : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
-                }`}
-              >
-                {r === "all" ? "All time" : `Past ${r}`}
-              </button>
-            ))}
-          </div>
+      {/* Search */}
+      <section className="sticky top-[57px] z-20 -mx-4 border-b border-border bg-background/90 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search wallpapers…"
+            className="w-full rounded-full border border-border bg-card py-2.5 pl-11 pr-10 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
+          />
+          {searchInput && (
+            <button onClick={() => setSearchInput("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Clear">
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
-        {/* Tags */}
-        {(tagsQuery.data?.tags?.length ?? 0) > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              onClick={() => setSearch({ tag: "" })}
-              className={`text-xs italic font-serif transition-colors ${
-                !tag ? "text-accent" : "text-muted-foreground hover:text-foreground"
+        {/* Categories */}
+        <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
+          <Chip active={!cat} onClick={() => setSearch({ cat: "" })}>All</Chip>
+          {catsQuery.data?.categories.map((c) => (
+            <Chip key={c.id} active={cat === c.slug} onClick={() => setSearch({ cat: c.slug })}>{c.name}</Chip>
+          ))}
+        </div>
+
+        {/* Sort */}
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          {(["newest", "popular", "downloads"] as const).map((s) => (
+            <button key={s} onClick={() => setSearch({ sort: s })}
+              className={`rounded-full px-3 py-1 capitalize transition-colors ${
+                sort === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
               }`}
-            >
-              all subjects
-            </button>
-            {tagsQuery.data?.tags.map((t) => (
-              <button
-                key={t}
-                onClick={() => setSearch({ tag: tag === t ? "" : t })}
-                className={`text-xs italic font-serif transition-colors ${
-                  tag === t ? "text-accent" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                · {t}
-              </button>
-            ))}
-          </div>
-        )}
+            >{s}</button>
+          ))}
+        </div>
       </section>
 
-      {/* Stats */}
-      <p className="py-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-        {imagesQuery.isLoading ? "Loading…" : `${total} ${total === 1 ? "frame" : "frames"}`}
-        {(q || tag || range !== "all") && " · filtered"}
+      <p className="py-4 text-xs uppercase tracking-wider text-muted-foreground">
+        {imagesQuery.isLoading ? "Loading…" : `${total} wallpaper${total === 1 ? "" : "s"}`}
       </p>
 
-      {/* Grid */}
       {!imagesQuery.isLoading && items.length === 0 ? (
         <div className="py-20 text-center">
-          <p className="font-serif text-2xl italic text-muted-foreground">Nothing matches that.</p>
-          <button
-            onClick={() => navigate({ search: { q: "", tag: "", range: "all" } })}
-            className="mt-4 text-sm underline-offset-4 hover:underline"
-          >
-            Clear filters
-          </button>
+          <p className="font-display text-xl text-muted-foreground">No wallpapers yet.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Sign in and upload your first one from the dashboard.</p>
         </div>
       ) : (
         <GalleryGrid items={items} onOpen={setOpen} />
@@ -214,5 +161,15 @@ function GalleryPage() {
 
       <Lightbox image={open} onClose={() => setOpen(null)} />
     </div>
+  );
+}
+
+function Chip({ children, active, onClick }: { children: React.ReactNode; active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick}
+      className={`shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-all ${
+        active ? "border-accent bg-accent text-accent-foreground shadow-glow" : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+      }`}
+    >{children}</button>
   );
 }
