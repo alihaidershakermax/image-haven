@@ -62,27 +62,30 @@
 }
 
 :root {
-  /* Editorial minimal — warm paper light theme */
-  --radius: 0.5rem;
-  --background: oklch(0.985 0.005 80);
-  --foreground: oklch(0.18 0.01 60);
+  /* WallVault — refined light */
+  --radius: 1rem;
+  --background: oklch(0.985 0.003 260);
+  --foreground: oklch(0.16 0.02 270);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.01 60);
+  --card-foreground: oklch(0.16 0.02 270);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.01 60);
-  --primary: oklch(0.22 0.015 60);
-  --primary-foreground: oklch(0.985 0.005 80);
-  --secondary: oklch(0.94 0.008 80);
-  --secondary-foreground: oklch(0.22 0.015 60);
-  --muted: oklch(0.94 0.008 80);
-  --muted-foreground: oklch(0.48 0.012 70);
-  --accent: oklch(0.55 0.18 35);
-  --accent-foreground: oklch(0.985 0.005 80);
+  --popover-foreground: oklch(0.16 0.02 270);
+  --primary: oklch(0.22 0.04 280);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.005 270);
+  --secondary-foreground: oklch(0.22 0.04 280);
+  --muted: oklch(0.95 0.005 270);
+  --muted-foreground: oklch(0.5 0.015 270);
+  --accent: oklch(0.65 0.22 295);
+  --accent-foreground: oklch(0.99 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.9 0.01 80);
-  --input: oklch(0.9 0.01 80);
-  --ring: oklch(0.55 0.18 35);
+  --border: oklch(0.91 0.005 270);
+  --input: oklch(0.91 0.005 270);
+  --ring: oklch(0.65 0.22 295);
+  --gradient-hero: linear-gradient(135deg, oklch(0.65 0.22 295) 0%, oklch(0.6 0.2 320) 50%, oklch(0.55 0.2 25) 100%);
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.06), 0 4px 12px oklch(0 0 0 / 0.04);
+  --shadow-glow: 0 8px 32px oklch(0.65 0.22 295 / 0.25);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -99,26 +102,29 @@
 }
 
 .dark {
-  /* Editorial minimal — ink dark theme */
-  --background: oklch(0.14 0.008 60);
-  --foreground: oklch(0.96 0.005 80);
-  --card: oklch(0.18 0.008 60);
-  --card-foreground: oklch(0.96 0.005 80);
-  --popover: oklch(0.18 0.008 60);
-  --popover-foreground: oklch(0.96 0.005 80);
-  --primary: oklch(0.96 0.005 80);
-  --primary-foreground: oklch(0.14 0.008 60);
-  --secondary: oklch(0.24 0.01 60);
-  --secondary-foreground: oklch(0.96 0.005 80);
-  --muted: oklch(0.24 0.01 60);
-  --muted-foreground: oklch(0.68 0.012 70);
-  --accent: oklch(0.7 0.16 40);
-  --accent-foreground: oklch(0.14 0.008 60);
+  /* WallVault — deep night (default for wallpaper site) */
+  --background: oklch(0.11 0.012 270);
+  --foreground: oklch(0.97 0.003 270);
+  --card: oklch(0.15 0.015 270);
+  --card-foreground: oklch(0.97 0.003 270);
+  --popover: oklch(0.13 0.015 270);
+  --popover-foreground: oklch(0.97 0.003 270);
+  --primary: oklch(0.97 0.003 270);
+  --primary-foreground: oklch(0.11 0.012 270);
+  --secondary: oklch(0.2 0.02 270);
+  --secondary-foreground: oklch(0.97 0.003 270);
+  --muted: oklch(0.2 0.02 270);
+  --muted-foreground: oklch(0.65 0.015 270);
+  --accent: oklch(0.7 0.22 300);
+  --accent-foreground: oklch(0.11 0.012 270);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.7 0.16 40);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.7 0.22 300);
+  --gradient-hero: linear-gradient(135deg, oklch(0.55 0.25 295) 0%, oklch(0.5 0.22 320) 50%, oklch(0.5 0.22 25) 100%);
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px oklch(0 0 0 / 0.3);
+  --shadow-glow: 0 8px 32px oklch(0.7 0.22 300 / 0.35);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -144,10 +150,19 @@
     color: var(--color-foreground);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
   }
 
-  .font-serif {
-    font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
-    font-feature-settings: "ss01", "ss02";
+  .font-display {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
+
+  .bg-gradient-hero { background: var(--gradient-hero); }
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+
+  /* Hide scrollbar for category chips */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

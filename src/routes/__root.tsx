@@ -34,13 +34,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Frame — A quiet image journal" },
-      { name: "description", content: "An editorial image gallery, curated through Telegram. Browse, search, and download photographs in a calm, minimal interface." },
-      { name: "author", content: "Frame" },
-      { property: "og:title", content: "Frame — A quiet image journal" },
-      { property: "og:description", content: "An editorial image gallery, curated through Telegram." },
+      { title: "WallVault — Beautiful 4K Wallpapers for Your Phone" },
+      { name: "description", content: "Discover and download stunning wallpapers in 4K, HD, and original quality. A curated collection of phone backgrounds — free, fast, and beautifully organized." },
+      { name: "author", content: "WallVault" },
+      { property: "og:title", content: "WallVault — Beautiful 4K Wallpapers" },
+      { property: "og:description", content: "Curated phone wallpapers in 4K and HD. Free downloads." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#0a0a14" },
     ],
     links: [
       {
@@ -51,7 +52,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap",
       },
     ],
   }),
@@ -62,7 +63,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
@@ -83,11 +84,11 @@ function RootComponent() {
       <ThemeProvider>
         <div className="min-h-screen flex flex-col">
           <SiteHeader />
-          <main className="flex-1">
+          <main className="flex-1 pb-24 md:pb-0">
             <Outlet />
           </main>
-          <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-            <p className="font-serif italic">Frame · curated quietly</p>
+          <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+            <p>WallVault · curated wallpapers · {new Date().getFullYear()}</p>
           </footer>
         </div>
         <Toaster />
