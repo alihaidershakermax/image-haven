@@ -100,7 +100,7 @@ function GalleryPage() {
   }, [imagesQuery]);
 
   const setSearch = (patch: Partial<SearchParams>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }) });
+    navigate({ search: (prev: SearchParams) => ({ ...prev, ...patch }) as SearchParams });
 
   return (
     <div className="mx-auto max-w-7xl px-4 md:px-8">
