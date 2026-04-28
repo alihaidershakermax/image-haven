@@ -9,6 +9,12 @@ import { GalleryGrid } from "@/components/gallery-grid";
 import { Lightbox } from "@/components/lightbox";
 import type { GalleryImage } from "@/types/image";
 
+type SearchParams = {
+  q: string;
+  tag: string;
+  range: "all" | "week" | "month" | "year";
+};
+
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
   tag: fallback(z.string(), "").default(""),
@@ -47,7 +53,7 @@ function GalleryPage() {
   useEffect(() => {
     const t = setTimeout(() => {
       if (searchInput !== q) {
-        navigate({ search: (prev) => ({ ...prev, q: searchInput }) });
+        navigate({ search: (prev: SearchParams) => ({ ...prev, q: searchInput }) });
       }
     }, 300);
     return () => clearTimeout(t);
@@ -93,8 +99,8 @@ function GalleryPage() {
     return () => io.disconnect();
   }, [imagesQuery]);
 
-  const setSearch = (patch: Partial<{ q: string; tag: string; range: typeof range }>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }) });
+  const setSearch = (patch: Partial<SearchParams>) =>
+    navigate({ search: (prev: SearchParams) => ({ ...prev, ...patch }) });
 
   return (
     <div className="mx-auto max-w-7xl px-4 md:px-8">
