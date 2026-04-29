@@ -17,7 +17,7 @@ Modern image gallery & management platform built with React, Supabase, and Vite.
 - **Routing:** TanStack Router (v1)
 - **UI:** Radix UI + Tailwind CSS v4
 - **Backend:** Supabase (PostgreSQL + Storage)
-- **Cloud:** Vercel hosting
+- **Hosting:** GitHub Pages (static) + Supabase (backend)
 - **Optional:** Cloudflare Workers (for image optimization)
 
 ## 🚀 Quick Start
@@ -54,14 +54,15 @@ image-haven/
 │   └── types/         # TypeScript types
 ├── supabase/          # Supabase config & migrations
 ├── .env.example       # Environment variables template
-├── vercel.json        # Vercel configuration (headers, redirects)
+├── vercel.json        # Vercel configuration (headers, redirects) — optional for GitHub Pages
 ├── wrangler.jsonc     # Cloudflare Workers config (optional)
 └── package.json
 ```
 
 ## 🔐 Environment Variables
 
-Create a `.env` file in the root:
+### **For Local Development:**
+Copy `.env.example` to `.env` and fill in:
 
 ```env
 SUPABASE_PUBLISHABLE_KEY=your-publishable-key
@@ -69,36 +70,69 @@ SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PROJECT_ID=your-project-id
 ```
 
-> **Note:** These are public keys. For secrets (service role), use Vercel environment variables only.
+### **For GitHub Pages (CI/CD):**
+Add these as **GitHub Secrets** (Repo → Settings → Secrets and variables → Actions):
+
+| Secret Name | Value | Where to get it |
+|-------------|-------|-----------------|
+| `SUPABASE_PUBLISHABLE_KEY` | Your Supabase publishable key | Supabase Dashboard → Settings → API |
+| `SUPABASE_URL` | Supabase project URL | Same page |
+| `VITE_SUPABASE_PROJECT_ID` | Supabase project ID | Same page |
+
+> **Note:** These are **public keys** (not secret). But keeping them in Secrets prevents exposing them in build logs.
 
 ## ☁️ Deployment
 
-### Vercel (Recommended)
+### **GitHub Pages (Primary)**
 
-1. Import project from GitHub: https://vercel.com/new
-2. Select `alihaidershakermax/image-haven`
-3. Configure environment variables (see above)
-4. Deploy
+The project is configured for automatic deployment to GitHub Pages via GitHub Actions.
 
-**Auto-deploy via GitHub Actions:** Push to `main` triggers automatic deployment.
+**How it works:**
+1. Push to `main` branch
+2. GitHub Actions builds the project
+3. Deploys to `gh-pages` branch automatically
+4. Site live at: `https://alihaidershakermax.github.io/image-haven`
 
-### Build Settings (Vercel)
+**Manual trigger:**
+- Go to **Actions** tab in GitHub
+- Select "Deploy to GitHub Pages" workflow
+- Click **"Run workflow"**
+
+### **Build Settings (GitHub Pages)**
 
 - **Build Command:** `npm run build`
 - **Output Directory:** `dist`
 - **Install Command:** `npm ci`
 
+**Important:** The `homepage` field in `package.json` is set to:
+```
+"homepage": "https://alihaidershakermax.github.io/image-haven"
+```
+
+### **Custom Domain (Optional)**
+
+If you have a custom domain (e.g., `images.yourdomain.com`):
+1. Go to Repository Settings → Pages
+2. Under "Custom domain", enter your domain
+3. Update `homepage` in `package.json` to match
+4. Redeploy
+
+### **Vercel (Alternative)**
+
+If you prefer Vercel, import the repo and set environment variables there. See `vercel.json` for security headers config.
+
 ## 🛡️ Security
 
-- ✅ **Security Headers** configured in `vercel.json`:
+- ✅ **Security Headers** (via `vercel.json` for Vercel; for GitHub Pages, configure in `vite.config.ts` or use Cloudflare):
   - `X-Frame-Options: DENY`
   - `Content-Security-Policy: default-src 'self'`
   - `X-Content-Type-Options: nosniff`
   - `Strict-Transport-Security: max-age=31536000`
   - `Referrer-Policy: strict-origin-when-cross-origin`
 
-- 🔒 **Supabase RLS** (Row Level Security) enabled on all tables
+- 🔒 **Supabase RLS** (Row Level Security) — enable on all tables
 - 🚫 **No secret keys** committed to repository
+- 🔐 **Environment variables** stored in GitHub Secrets (not in code)
 
 ## 📝 Supabase Setup
 
@@ -106,13 +140,14 @@ VITE_SUPABASE_PROJECT_ID=your-project-id
 2. Run SQL migrations from `supabase/migrations/`
 3. Configure Storage buckets for images
 4. Set up RLS policies (see Supabase docs)
+5. Get your API keys (publishable + URL) and add to GitHub Secrets
 
 ## 🤝 Contributing
 
 1. Fork the repo
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit (`git commit -m 'feat: add amazing feature'`)
+4. Push (`git push origin feat/amazing-feature`)
 5. Open a Pull Request
 
 ## 📄 License
@@ -127,4 +162,4 @@ Ali al-Akbar Haidar
 
 ---
 
-**Built with ❤️ using modern web stack.**
+**Built with ❤️ using modern web stack. Deployed automatically to GitHub Pages.**

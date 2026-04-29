@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -10,10 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      deployments: write
+      pages: write
+      id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -26,14 +28,19 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v30
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          org-id: ${{ secrets.VERCEL_ORG_ID }}
-          working-directory: ./
-          build-command: npm run build
-          output-directory: dist
-          scope: ${{ secrets.VERCEL_SCOPE }}
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
