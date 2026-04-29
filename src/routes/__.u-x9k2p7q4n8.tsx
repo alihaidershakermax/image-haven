@@ -1,144 +1,91 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import {
-  LogOut, Upload, Settings, Image as ImageIcon, Info, Plug, Lock,
+  LogOut, Upload, Settings, Image as ImageIcon, Info, Plug, Lock, KeyRound,
   Trash2, Eye, EyeOff, Loader2, Send, Save, FolderTree,
 } from "lucide-react";
 import {
-  isAdmin as isAdminFn, claimFirstAdmin, adminCount,
   uploadImage, listImagesAdmin, deleteImage, togglePublish,
   listCategories, createCategory, deleteCategory,
 } from "@/server/images.functions";
 import {
   getSiteSettings, updateSiteSettings, getAbout, updateAbout,
 } from "@/server/settings.functions";
+import {
+  checkDashboardSession, dashboardLogin, dashboardLogout, changeDashboardPassword,
+} from "@/server/dashboard-auth.functions";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/__/u-x9k2p7q4n8")({
   head: () => ({
     meta: [
-      { title: "Dashboard" },
+      { title: "—" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  component: DashboardPage,
+  component: HiddenDashboard,
 });
 
-type Tab = "images" | "upload" | "categories" | "about" | "settings" | "connections";
+type Tab = "images" | "upload" | "categories" | "about" | "settings" | "security" | "connections";
 
-function DashboardPage() {
-  const { user, loading } = useAuth();
+function HiddenDashboard() {
+  const qc = useQueryClient();
+  const session = useQuery({ queryKey: ["dash-session"], queryFn: () => checkDashboardSession(), retry: false, staleTime: 0 });
 
-  if (loading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+  if (session.isLoading) {
+    return <div className="flex min-h-[70vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
-  if (!user) return <SignIn />;
-  return <AdminGate />;
+  if (!session.data?.ok) return <Gate onSuccess={() => qc.invalidateQueries({ queryKey: ["dash-session"] })} />;
+  return <Dashboard onLogout={() => qc.invalidateQueries({ queryKey: ["dash-session"] })} />;
 }
 
-// ---------- Sign in ----------
-function SignIn() {
-  const [email, setEmail] = useState("");
+// ---------- Password gate ----------
+function Gate({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [err, setErr] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true);
+    setBusy(true); setErr(null);
     try {
-      if (mode === "in") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Signed in");
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-        });
-        if (error) throw error;
-        toast.success("Account created. Check your email if confirmation is required.");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed");
-    } finally {
-      setBusy(false);
-    }
+      const r = await dashboardLogin({ data: { password } });
+      if (!r.ok) { setErr(r.error || "Wrong password"); return; }
+      onSuccess();
+    } catch (e: any) { setErr(e.message || "Failed"); }
+    finally { setBusy(false); }
   };
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md items-center px-4 animate-fade-in">
+    <div className="mx-auto flex min-h-[80vh] max-w-md items-center px-4 animate-fade-in">
       <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-soft md:p-8">
         <div className="mb-6 flex items-center gap-2">
           <Lock className="h-5 w-5" />
-          <h1 className="font-display text-2xl">Owner sign in</h1>
+          <h1 className="font-display text-2xl">Restricted</h1>
         </div>
         <form onSubmit={submit} className="space-y-3">
-          <input type="email" required placeholder="email"
-            value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-accent/40" />
-          <input type="password" required placeholder="password" minLength={6}
+          <input
+            type="password" required autoFocus placeholder="••••••••"
             value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-accent/40" />
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-accent/40"
+          />
+          {err && <p className="text-xs text-destructive">{err}</p>}
           <button disabled={busy} type="submit"
             className="w-full rounded-lg bg-foreground py-2.5 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-60">
-            {busy ? "…" : mode === "in" ? "Sign in" : "Create account"}
+            {busy ? "…" : "Unlock"}
           </button>
         </form>
-        <button onClick={() => setMode(mode === "in" ? "up" : "in")}
-          className="mt-4 w-full text-center text-xs text-muted-foreground hover:text-foreground">
-          {mode === "in" ? "No account? Create one" : "Have an account? Sign in"}
-        </button>
+        <p className="mt-4 text-center text-[11px] text-muted-foreground">
+          Default password: <code className="font-mono">unposed</code> · change it after the first sign in.
+        </p>
       </div>
     </div>
   );
 }
 
-// ---------- Admin gate ----------
-function AdminGate() {
-  const adminQuery = useQuery({ queryKey: ["isAdmin"], queryFn: () => isAdminFn(), retry: false });
-  const countQuery = useQuery({ queryKey: ["adminCount"], queryFn: () => adminCount() });
-  const qc = useQueryClient();
-
-  if (adminQuery.isLoading || countQuery.isLoading) {
-    return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
-  }
-
-  if (!adminQuery.data?.isAdmin) {
-    const noAdmin = (countQuery.data?.count ?? 0) === 0;
-    return (
-      <div className="mx-auto max-w-md px-4 py-16 text-center animate-fade-in">
-        <Lock className="mx-auto h-8 w-8 text-muted-foreground" />
-        <h1 className="mt-4 font-display text-2xl">Restricted</h1>
-        {noAdmin ? (
-          <>
-            <p className="mt-2 text-sm text-muted-foreground">No owner exists yet. Claim ownership now.</p>
-            <button
-              onClick={async () => {
-                const r = await claimFirstAdmin();
-                if (r.ok) { toast.success("You are now the owner"); qc.invalidateQueries(); }
-                else toast.error(r.error || "Failed");
-              }}
-              className="mt-6 rounded-lg bg-foreground px-5 py-2 text-sm text-background hover:opacity-90"
-            >Claim ownership</button>
-          </>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">This account is not the owner.</p>
-        )}
-        <button onClick={() => supabase.auth.signOut()}
-          className="mt-4 text-xs text-muted-foreground hover:text-foreground">Sign out</button>
-      </div>
-    );
-  }
-
-  return <Dashboard />;
-}
-
 // ---------- Dashboard shell ----------
-function Dashboard() {
+function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>("images");
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -147,6 +94,7 @@ function Dashboard() {
     { id: "categories", label: "Categories", icon: <FolderTree className="h-4 w-4" /> },
     { id: "about", label: "About", icon: <Info className="h-4 w-4" /> },
     { id: "settings", label: "Settings", icon: <Settings className="h-4 w-4" /> },
+    { id: "security", label: "Security", icon: <KeyRound className="h-4 w-4" /> },
     { id: "connections", label: "Connections", icon: <Plug className="h-4 w-4" /> },
   ];
 
@@ -157,20 +105,17 @@ function Dashboard() {
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Owner</p>
           <h1 className="mt-1 font-display text-3xl md:text-4xl">Dashboard</h1>
         </div>
-        <button onClick={() => supabase.auth.signOut()}
+        <button onClick={async () => { await dashboardLogout(); onLogout(); }}
           className="rounded-full border border-border p-2 text-muted-foreground hover:text-foreground" title="Sign out">
           <LogOut className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Tab bar — horizontal scroll on mobile */}
       <div className="-mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-border px-4 pb-px md:mx-0 md:px-0">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex shrink-0 items-center gap-1.5 rounded-t-md border-b-2 px-3 py-2.5 text-sm transition-colors ${
-              tab === t.id
-                ? "border-foreground text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+              tab === t.id ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}>
             {t.icon}{t.label}
           </button>
@@ -183,6 +128,7 @@ function Dashboard() {
         {tab === "categories" && <CategoriesTab />}
         {tab === "about" && <AboutTab />}
         {tab === "settings" && <SettingsTab />}
+        {tab === "security" && <SecurityTab />}
         {tab === "connections" && <ConnectionsTab />}
       </div>
     </div>
@@ -195,7 +141,6 @@ function ImagesTab() {
   const q = useQuery({ queryKey: ["images-admin"], queryFn: () => listImagesAdmin({ data: { page: 0, pageSize: 60 } }) });
   if (q.isLoading) return <Loader2 className="h-5 w-5 animate-spin" />;
   const items = q.data?.items ?? [];
-
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       {items.map((img: any) => (
@@ -261,24 +206,15 @@ function UploadTab() {
       setTitle(""); setDescription(""); setTags(""); setFile(null);
       qc.invalidateQueries({ queryKey: ["images-admin"] });
       qc.invalidateQueries({ queryKey: ["images"] });
-    } catch (err: any) {
-      toast.error(err.message || "Upload failed");
-    } finally {
-      setBusy(false);
-    }
+    } catch (err: any) { toast.error(err.message || "Upload failed"); }
+    finally { setBusy(false); }
   };
 
   return (
     <form onSubmit={submit} className="max-w-xl space-y-4">
-      <Field label="Title">
-        <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
-      </Field>
-      <Field label="Description">
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputCls} />
-      </Field>
-      <Field label="Tags (comma separated)">
-        <input value={tags} onChange={(e) => setTags(e.target.value)} className={inputCls} placeholder="nature, calm, mountains" />
-      </Field>
+      <Field label="Title"><input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} /></Field>
+      <Field label="Description"><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputCls} /></Field>
+      <Field label="Tags (comma separated)"><input value={tags} onChange={(e) => setTags(e.target.value)} className={inputCls} placeholder="nature, calm, mountains" /></Field>
       <Field label="Category">
         <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputCls}>
           <option value="">—</option>
@@ -303,7 +239,6 @@ function CategoriesTab() {
   const cats = useQuery({ queryKey: ["categories"], queryFn: () => listCategories() });
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-
   return (
     <div className="max-w-xl space-y-6">
       <form onSubmit={async (e) => {
@@ -319,10 +254,7 @@ function CategoriesTab() {
       <div className="space-y-2">
         {cats.data?.categories.map((c: any) => (
           <div key={c.id} className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2">
-            <div>
-              <p className="text-sm">{c.name}</p>
-              <p className="text-xs text-muted-foreground">/{c.slug}</p>
-            </div>
+            <div><p className="text-sm">{c.name}</p><p className="text-xs text-muted-foreground">/{c.slug}</p></div>
             <button onClick={async () => {
               if (!confirm("Delete category?")) return;
               const r = await deleteCategory({ data: { id: c.id } });
@@ -345,25 +277,22 @@ function AboutTab() {
   const [form, setForm] = useState<any>(null);
   useEffect(() => { if (q.data?.about) setForm(q.data.about); }, [q.data]);
   if (!form) return <Loader2 className="h-5 w-5 animate-spin" />;
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const r = await updateAbout({ data: {
-      heading: form.heading, body: form.body,
-      instagram_url: form.instagram_url, instagram_handle: form.instagram_handle,
-      photo_url: form.photo_url || null,
-    }});
-    if (r.ok) { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["about"] }); }
-    else toast.error(r.error || "Failed");
-  };
-
   return (
-    <form onSubmit={save} className="max-w-xl space-y-4">
+    <form onSubmit={async (e) => {
+      e.preventDefault();
+      const r = await updateAbout({ data: {
+        heading: form.heading, body: form.body,
+        instagram_url: form.instagram_url, instagram_handle: form.instagram_handle,
+        photo_url: form.photo_url || null,
+      }});
+      if (r.ok) { toast.success("Saved"); qc.invalidateQueries({ queryKey: ["about"] }); }
+      else toast.error(r.error || "Failed");
+    }} className="max-w-xl space-y-4">
       <Field label="Heading"><input className={inputCls} value={form.heading} onChange={(e) => setForm({ ...form, heading: e.target.value })} /></Field>
       <Field label="Body"><textarea rows={6} className={inputCls} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} /></Field>
       <Field label="Instagram URL"><input className={inputCls} value={form.instagram_url} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} /></Field>
       <Field label="Instagram handle"><input className={inputCls} value={form.instagram_handle} onChange={(e) => setForm({ ...form, instagram_handle: e.target.value })} /></Field>
-      <Field label="Photo URL (optional)"><input className={inputCls} value={form.photo_url ?? ""} onChange={(e) => setForm({ ...form, photo_url: e.target.value })} /></Field>
+      <Field label="Photo URL"><input className={inputCls} placeholder="https://…" value={form.photo_url ?? ""} onChange={(e) => setForm({ ...form, photo_url: e.target.value })} /></Field>
       <button className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm text-background hover:opacity-90">
         <Save className="h-4 w-4" /> Save
       </button>
@@ -378,58 +307,76 @@ function SettingsTab() {
   const [form, setForm] = useState<any>(null);
   useEffect(() => { if (q.data?.settings) setForm(q.data.settings); }, [q.data]);
   if (!form) return <Loader2 className="h-5 w-5 animate-spin" />;
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const r = await updateSiteSettings({ data: {
-      site_name: form.site_name,
-      tagline: form.tagline ?? "",
-      favicon_url: form.favicon_url || null,
-      logo_url: form.logo_url || null,
-      privacy_policy: form.privacy_policy ?? "",
-      telegram_bot_enabled: !!form.telegram_bot_enabled,
-    }});
-    if (r.ok) {
-      toast.success("Saved");
-      qc.invalidateQueries({ queryKey: ["site-settings"] });
-      qc.invalidateQueries({ queryKey: ["site-settings-edit"] });
-      // Update favicon live
-      if (form.favicon_url) {
-        let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement | null;
-        if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
-        link.href = form.favicon_url;
-      }
-    } else toast.error(r.error || "Failed");
-  };
-
   return (
-    <form onSubmit={save} className="max-w-xl space-y-5">
+    <form onSubmit={async (e) => {
+      e.preventDefault();
+      const r = await updateSiteSettings({ data: {
+        site_name: form.site_name, tagline: form.tagline ?? "",
+        favicon_url: form.favicon_url || null, logo_url: form.logo_url || null,
+        privacy_policy: form.privacy_policy ?? "",
+        telegram_bot_enabled: !!form.telegram_bot_enabled,
+      }});
+      if (r.ok) {
+        toast.success("Saved");
+        qc.invalidateQueries({ queryKey: ["site-settings"] });
+        qc.invalidateQueries({ queryKey: ["site-settings-edit"] });
+      } else toast.error(r.error || "Failed");
+    }} className="max-w-xl space-y-5">
       <Section title="Branding">
         <Field label="Site name"><input className={inputCls} value={form.site_name} onChange={(e) => setForm({ ...form, site_name: e.target.value })} /></Field>
         <Field label="Tagline"><input className={inputCls} value={form.tagline ?? ""} onChange={(e) => setForm({ ...form, tagline: e.target.value })} /></Field>
         <Field label="Favicon URL"><input className={inputCls} placeholder="https://…/favicon.png" value={form.favicon_url ?? ""} onChange={(e) => setForm({ ...form, favicon_url: e.target.value })} /></Field>
         <Field label="Logo URL"><input className={inputCls} placeholder="https://…/logo.svg" value={form.logo_url ?? ""} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} /></Field>
       </Section>
-
       <Section title="Privacy">
         <Field label="Privacy policy">
-          <textarea rows={6} className={inputCls} value={form.privacy_policy ?? ""}
-            onChange={(e) => setForm({ ...form, privacy_policy: e.target.value })} />
+          <textarea rows={6} className={inputCls} value={form.privacy_policy ?? ""} onChange={(e) => setForm({ ...form, privacy_policy: e.target.value })} />
         </Field>
       </Section>
-
       <Section title="Integrations">
         <label className="flex cursor-pointer items-center justify-between rounded-lg border border-border bg-card px-3 py-2.5">
           <span className="flex items-center gap-2 text-sm"><Send className="h-4 w-4" /> Telegram bot ingestion</span>
           <input type="checkbox" checked={!!form.telegram_bot_enabled}
             onChange={(e) => setForm({ ...form, telegram_bot_enabled: e.target.checked })} />
         </label>
-        <p className="text-xs text-muted-foreground">Connect Telegram in the <strong>Connections</strong> tab, then enable here.</p>
       </Section>
-
       <button className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm text-background hover:opacity-90">
         <Save className="h-4 w-4" /> Save settings
       </button>
+    </form>
+  );
+}
+
+// ---------- Security (change password) ----------
+function SecurityTab() {
+  const [cur, setCur] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  return (
+    <form onSubmit={async (e) => {
+      e.preventDefault();
+      if (next !== confirm) return toast.error("Passwords don't match");
+      if (next.length < 6) return toast.error("New password must be at least 6 characters");
+      setBusy(true);
+      try {
+        const r = await changeDashboardPassword({ data: { currentPassword: cur, newPassword: next } });
+        if (!r.ok) throw new Error(r.error);
+        toast.success("Password changed");
+        setCur(""); setNext(""); setConfirm("");
+      } catch (err: any) { toast.error(err.message || "Failed"); }
+      finally { setBusy(false); }
+    }} className="max-w-md space-y-4">
+      <Section title="Dashboard password">
+        <Field label="Current password"><input type="password" required className={inputCls} value={cur} onChange={(e) => setCur(e.target.value)} /></Field>
+        <Field label="New password"><input type="password" required minLength={6} className={inputCls} value={next} onChange={(e) => setNext(e.target.value)} /></Field>
+        <Field label="Confirm new password"><input type="password" required minLength={6} className={inputCls} value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
+        <button disabled={busy} className="inline-flex items-center gap-2 rounded-lg bg-foreground px-5 py-2.5 text-sm text-background hover:opacity-90 disabled:opacity-60">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+          Change password
+        </button>
+      </Section>
     </form>
   );
 }
@@ -438,9 +385,7 @@ function SettingsTab() {
 function ConnectionsTab() {
   return (
     <div className="max-w-xl space-y-3">
-      <p className="text-sm text-muted-foreground">
-        Connect external services. Connections are managed at the workspace level and synced into the project securely.
-      </p>
+      <p className="text-sm text-muted-foreground">Connect Telegram, Slack, Google Drive, S3 and more.</p>
       <div className="rounded-xl border border-border bg-card p-4">
         <div className="flex items-start gap-3">
           <Send className="mt-0.5 h-5 w-5" />
@@ -450,8 +395,7 @@ function ConnectionsTab() {
           </div>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          To set up Telegram or other connections (Slack, Google Drive, S3…), ask in chat:
-          <span className="block mt-1 italic">“Connect Telegram”</span>
+          Ask in chat: <span className="italic">“Connect Telegram”</span> to set it up.
         </p>
       </div>
     </div>
@@ -460,7 +404,6 @@ function ConnectionsTab() {
 
 // ---------- helpers ----------
 const inputCls = "w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-accent/40";
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
@@ -469,7 +412,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 md:p-5">

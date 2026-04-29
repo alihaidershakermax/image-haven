@@ -92,6 +92,27 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_access: {
+        Row: {
+          id: number
+          password_hash: string
+          salt: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          password_hash: string
+          salt: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          password_hash?: string
+          salt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       download_logs: {
         Row: {
           created_at: string

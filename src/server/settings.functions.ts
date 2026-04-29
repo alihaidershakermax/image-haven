@@ -1,13 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-async function assertAdmin(userId: string) {
-  const { data } = await supabaseAdmin
-    .from("app_roles").select("id").eq("user_id", userId).eq("role", "admin").maybeSingle();
-  if (!data) throw new Error("Forbidden: admin only");
-}
+import { requireDashboard } from "./dashboard-gate";
 
 // ---------- Site settings ----------
 export const getSiteSettings = createServerFn({ method: "GET" }).handler(async () => {
@@ -25,10 +19,9 @@ const settingsSchema = z.object({
 });
 
 export const updateSiteSettings = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => settingsSchema.parse(input))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+  .handler(async ({ data }) => {
+    requireDashboard();
     const { error } = await supabaseAdmin.from("site_settings")
       .update({ ...data, updated_at: new Date().toISOString() }).eq("id", 1);
     if (error) return { ok: false, error: error.message };
@@ -50,10 +43,9 @@ const aboutSchema = z.object({
 });
 
 export const updateAbout = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => aboutSchema.parse(input))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+  .handler(async ({ data }) => {
+    requireDashboard();
     const { error } = await supabaseAdmin.from("about_content")
       .update({ ...data, updated_at: new Date().toISOString() }).eq("id", 1);
     if (error) return { ok: false, error: error.message };

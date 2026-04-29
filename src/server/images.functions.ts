@@ -1,10 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireDashboard } from "./dashboard-gate";
 
-// Public listing -----------------------------------------------------
-
+// ---------- Public listing ----------
 const listSchema = z.object({
   search: z.string().max(100).optional().default(""),
   categorySlug: z.string().max(60).optional().default(""),
@@ -67,8 +66,7 @@ export const getOverallStats = createServerFn({ method: "GET" }).handler(async (
   };
 });
 
-// Tracking ------------------------------------------------------------
-
+// ---------- Tracking ----------
 export const trackView = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
@@ -93,44 +91,8 @@ export const trackDownload = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// Admin: bootstrap & status ------------------------------------------
-
-export const isAdmin = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data } = await supabaseAdmin
-      .from("app_roles").select("id").eq("user_id", context.userId).eq("role", "admin").maybeSingle();
-    return { isAdmin: !!data };
-  });
-
-export const adminCount = createServerFn({ method: "GET" }).handler(async () => {
-  const { count } = await supabaseAdmin
-    .from("app_roles").select("*", { count: "exact", head: true }).eq("role", "admin");
-  return { count: count ?? 0 };
-});
-
-export const claimFirstAdmin = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { count } = await supabaseAdmin
-      .from("app_roles").select("*", { count: "exact", head: true }).eq("role", "admin");
-    if ((count ?? 0) > 0) return { ok: false, error: "Admin already exists" };
-    const { error } = await supabaseAdmin.from("app_roles").insert({ user_id: context.userId, role: "admin" });
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
-  });
-
-// Admin guard helper
-async function assertAdmin(userId: string) {
-  const { data } = await supabaseAdmin
-    .from("app_roles").select("id").eq("user_id", userId).eq("role", "admin").maybeSingle();
-  if (!data) throw new Error("Forbidden: admin only");
-}
-
-// Categories admin ---------------------------------------------------
-
+// ---------- Categories admin ----------
 export const createCategory = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z.object({
       name: z.string().trim().min(1).max(60),
@@ -138,30 +100,27 @@ export const createCategory = createServerFn({ method: "POST" })
       description: z.string().max(300).optional().nullable(),
     }).parse(input)
   )
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+  .handler(async ({ data }) => {
+    requireDashboard();
     const { data: row, error } = await supabaseAdmin.from("categories").insert(data).select().single();
     if (error) return { ok: false, error: error.message };
     return { ok: true, category: row };
   });
 
 export const deleteCategory = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+  .handler(async ({ data }) => {
+    requireDashboard();
     const { error } = await supabaseAdmin.from("categories").delete().eq("id", data.id);
     if (error) return { ok: false, error: error.message };
     return { ok: true };
   });
 
-// Image admin (delete & toggle publish) ------------------------------
-
+// ---------- Image admin ----------
 export const deleteImage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+  .handler(async ({ data }) => {
+    requireDashboard();
     const { data: img } = await supabaseAdmin.from("images").select("storage_path").eq("id", data.id).maybeSingle();
     if (img?.storage_path) {
       await supabaseAdmin.storage.from("wallpapers").remove([
@@ -177,24 +136,21 @@ export const deleteImage = createServerFn({ method: "POST" })
   });
 
 export const togglePublish = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid(), published: z.boolean() }).parse(input))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+  .handler(async ({ data }) => {
+    requireDashboard();
     const { error } = await supabaseAdmin.from("images").update({ published: data.published }).eq("id", data.id);
     if (error) return { ok: false, error: error.message };
     return { ok: true };
   });
 
-// Upload + multi-resolution generation -------------------------------
-
+// ---------- Upload + multi-resolution generation ----------
 const uploadSchema = z.object({
   title: z.string().trim().min(1).max(120),
   description: z.string().max(1000).optional().nullable(),
   tags: z.array(z.string().trim().min(1).max(30).regex(/^[a-zA-Z0-9 _-]+$/)).max(15).optional().default([]),
   categoryId: z.string().uuid().optional().nullable(),
-  // base64-encoded image bytes (data URL or raw base64)
-  imageBase64: z.string().min(20).max(40_000_000), // up to ~30MB encoded
+  imageBase64: z.string().min(20).max(40_000_000),
   mimeType: z.string().regex(/^image\/(jpeg|jpg|png|webp)$/i),
 });
 
@@ -211,12 +167,9 @@ function slugify(s: string) {
 }
 
 export const uploadImage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => uploadSchema.parse(input))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
-
-    // Lazy import photon (WASM) only on server
+  .handler(async ({ data }) => {
+    requireDashboard();
     const photon = await import("@cf-wasm/photon");
 
     const bytes = decodeBase64(data.imageBase64);
@@ -228,9 +181,8 @@ export const uploadImage = createServerFn({ method: "POST" })
     const origW = original.get_width();
     const origH = original.get_height();
 
-    // Helper: resize keeping aspect ratio so longest side equals target
     const resizeToWidth = (img: any, targetW: number) => {
-      if (origW <= targetW) return img; // no upscale
+      if (origW <= targetW) return img;
       const ratio = targetW / origW;
       const newH = Math.round(origH * ratio);
       return photon.resize(img, targetW, newH, photon.SamplingFilter.Lanczos3);
@@ -255,16 +207,12 @@ export const uploadImage = createServerFn({ method: "POST" })
       const { error: upErr } = await supabaseAdmin.storage.from("wallpapers").upload(path, out, {
         contentType: "image/jpeg", upsert: true, cacheControl: "31536000, immutable",
       });
-      if (upErr) {
-        console.error("upload failed", v.key, upErr);
-        return { ok: false, error: `Upload failed (${v.key}): ${upErr.message}` };
-      }
+      if (upErr) return { ok: false, error: `Upload failed (${v.key}): ${upErr.message}` };
       const { data: pub } = supabaseAdmin.storage.from("wallpapers").getPublicUrl(path);
       urls[v.key] = pub.publicUrl;
       if (v.key === "original") fileSize = out.byteLength;
     }
 
-    // ensure unique slug
     let slug = slugBase;
     const { data: existing } = await supabaseAdmin.from("images").select("id").eq("slug", slug).maybeSingle();
     if (existing) slug = `${slug}-${id.slice(0, 6)}`;
@@ -275,32 +223,25 @@ export const uploadImage = createServerFn({ method: "POST" })
       description: data.description ?? null,
       tags: data.tags ?? [],
       category_id: data.categoryId ?? null,
-      url: urls.original,
-      url_4k: urls["4k"],
-      url_hd: urls.hd,
-      url_thumb: urls.thumb,
+      url: urls.original, url_4k: urls["4k"], url_hd: urls.hd, url_thumb: urls.thumb,
       thumbnail_url: urls.thumb,
-      width: origW,
-      height: origH,
+      width: origW, height: origH,
       file_size_bytes: fileSize,
-      slug,
-      storage_path: folder,
-      source: "web",
-      published: true,
+      slug, storage_path: folder,
+      source: "web", published: true,
     }).select().single();
 
     if (error) return { ok: false, error: error.message };
     return { ok: true, image: row };
   });
 
-// Admin: list including unpublished
+// ---------- Admin list (gated) ----------
 export const listImagesAdmin = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
     z.object({ page: z.number().int().min(0).optional().default(0), pageSize: z.number().int().min(4).max(60).optional().default(30) }).parse(input ?? {})
   )
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.userId);
+  .handler(async ({ data }) => {
+    requireDashboard();
     const from = data.page * data.pageSize;
     const to = from + data.pageSize - 1;
     const { data: rows, count, error } = await supabaseAdmin
