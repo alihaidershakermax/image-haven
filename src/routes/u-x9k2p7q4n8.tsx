@@ -17,7 +17,7 @@ import {
   checkDashboardSession, dashboardLogin, dashboardLogout, changeDashboardPassword,
 } from "@/server/dashboard-auth.functions";
 
-export const Route = createFileRoute("/__/u-x9k2p7q4n8")({
+export const Route = createFileRoute("/u-x9k2p7q4n8")({
   head: () => ({
     meta: [
       { title: "—" },

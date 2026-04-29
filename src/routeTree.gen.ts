@@ -9,10 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UX9k2p7q4n8RouteImport } from './routes/u-x9k2p7q4n8'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as UX9k2p7q4n8RouteImport } from './routes/__.u-x9k2p7q4n8'
 
+const UX9k2p7q4n8Route = UX9k2p7q4n8RouteImport.update({
+  id: '/u-x9k2p7q4n8',
+  path: '/u-x9k2p7q4n8',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -21,11 +26,6 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UX9k2p7q4n8Route = UX9k2p7q4n8RouteImport.update({
-  id: '/__/u-x9k2p7q4n8',
-  path: '/u-x9k2p7q4n8',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -43,14 +43,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/__/u-x9k2p7q4n8': typeof UX9k2p7q4n8Route
+  '/u-x9k2p7q4n8': typeof UX9k2p7q4n8Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/about' | '/u-x9k2p7q4n8'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/about' | '/u-x9k2p7q4n8'
-  id: '__root__' | '/' | '/about' | '/__/u-x9k2p7q4n8'
+  id: '__root__' | '/' | '/about' | '/u-x9k2p7q4n8'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -61,6 +61,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/u-x9k2p7q4n8': {
+      id: '/u-x9k2p7q4n8'
+      path: '/u-x9k2p7q4n8'
+      fullPath: '/u-x9k2p7q4n8'
+      preLoaderRoute: typeof UX9k2p7q4n8RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -73,13 +80,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/__/u-x9k2p7q4n8': {
-      id: '/__/u-x9k2p7q4n8'
-      path: '/u-x9k2p7q4n8'
-      fullPath: '/u-x9k2p7q4n8'
-      preLoaderRoute: typeof UX9k2p7q4n8RouteImport
       parentRoute: typeof rootRouteImport
     }
   }
