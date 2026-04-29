@@ -3,7 +3,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
-import { Search, X, Sparkles } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { listImages, listCategories, getOverallStats } from "@/server/images.functions";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { Lightbox } from "@/components/lightbox";
@@ -89,15 +89,8 @@ function GalleryPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 md:px-6">
       {/* Editorial masthead */}
-      <section className="border-b border-border px-2 py-12 md:py-20">
-        <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          <span className="inline-flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3" /> Issue · {new Date().getFullYear()}
-          </span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-        <h1 className="mt-6 font-display text-5xl leading-[0.95] md:text-7xl">
+      <section className="border-b border-border px-2 py-12 md:py-20 animate-fade-in">
+        <h1 className="font-display text-5xl leading-[0.95] md:text-7xl">
           Unposed.
         </h1>
         <p className="mt-4 max-w-xl font-display text-lg italic text-muted-foreground md:text-xl">
@@ -153,7 +146,6 @@ function GalleryPage() {
       {!imagesQuery.isLoading && items.length === 0 ? (
         <div className="py-20 text-center">
           <p className="font-display text-xl text-muted-foreground">No wallpapers yet.</p>
-          <p className="mt-2 text-sm text-muted-foreground">Sign in and upload your first one from the dashboard.</p>
         </div>
       ) : (
         <GalleryGrid items={items} onOpen={setOpen} />

@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      about_content: {
+        Row: {
+          body: string
+          heading: string
+          id: number
+          instagram_handle: string
+          instagram_url: string
+          photo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          heading?: string
+          id?: number
+          instagram_handle?: string
+          instagram_url?: string
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          heading?: string
+          id?: number
+          instagram_handle?: string
+          instagram_url?: string
+          photo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_roles: {
         Row: {
           created_at: string
@@ -173,6 +203,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      site_settings: {
+        Row: {
+          favicon_url: string | null
+          id: number
+          logo_url: string | null
+          privacy_policy: string
+          site_name: string
+          tagline: string
+          telegram_bot_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          favicon_url?: string | null
+          id?: number
+          logo_url?: string | null
+          privacy_policy?: string
+          site_name?: string
+          tagline?: string
+          telegram_bot_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          favicon_url?: string | null
+          id?: number
+          logo_url?: string | null
+          privacy_policy?: string
+          site_name?: string
+          tagline?: string
+          telegram_bot_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       telegram_bot_state: {
         Row: {

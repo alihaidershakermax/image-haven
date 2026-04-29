@@ -1,9 +1,10 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "@/components/ui/sonner";
+import { getSiteSettings } from "@/server/settings.functions";
 
 import appCss from "../styles.css?url";
 
@@ -82,17 +83,42 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <DynamicHead />
         <div className="min-h-screen flex flex-col">
           <SiteHeader />
           <main className="flex-1 pb-24 md:pb-0">
             <Outlet />
           </main>
-          <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-            <p><span className="font-display">Unposed</span> · a quiet wallpaper journal · {new Date().getFullYear()}</p>
-          </footer>
+          <SiteFooter />
         </div>
         <Toaster />
       </ThemeProvider>
     </QueryClientProvider>
+  );
+}
+
+function DynamicHead() {
+  const { data } = useQuery({ queryKey: ["site-settings"], queryFn: () => getSiteSettings(), staleTime: 60_000 });
+  const s = data?.settings;
+  useEffect(() => {
+    if (typeof document === "undefined" || !s) return;
+    if (s.site_name) document.title = `${s.site_name}${s.tagline ? " — " + s.tagline : ""}`;
+    if (s.favicon_url) {
+      let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement | null;
+      if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+      link.href = s.favicon_url;
+    }
+  }, [s]);
+  return null;
+}
+
+function SiteFooter() {
+  const { data } = useQuery({ queryKey: ["site-settings"], queryFn: () => getSiteSettings(), staleTime: 60_000 });
+  const name = data?.settings?.site_name ?? "Unposed";
+  const tagline = data?.settings?.tagline ?? "a quiet wallpaper journal";
+  return (
+    <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+      <p><span className="font-display">{name}</span> · {tagline} · {new Date().getFullYear()}</p>
+    </footer>
   );
 }
