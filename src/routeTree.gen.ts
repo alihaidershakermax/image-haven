@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UX9k2p7q4n8RouteImport } from './routes/__.u-x9k2p7q4n8'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -22,31 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UX9k2p7q4n8Route = UX9k2p7q4n8RouteImport.update({
+  id: '/__/u-x9k2p7q4n8',
+  path: '/u-x9k2p7q4n8',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/u-x9k2p7q4n8': typeof UX9k2p7q4n8Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/u-x9k2p7q4n8': typeof UX9k2p7q4n8Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/__/u-x9k2p7q4n8': typeof UX9k2p7q4n8Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths: '/' | '/about' | '/u-x9k2p7q4n8'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to: '/' | '/about' | '/u-x9k2p7q4n8'
+  id: '__root__' | '/' | '/about' | '/__/u-x9k2p7q4n8'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  UX9k2p7q4n8Route: typeof UX9k2p7q4n8Route
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/__/u-x9k2p7q4n8': {
+      id: '/__/u-x9k2p7q4n8'
+      path: '/u-x9k2p7q4n8'
+      fullPath: '/u-x9k2p7q4n8'
+      preLoaderRoute: typeof UX9k2p7q4n8RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  UX9k2p7q4n8Route: UX9k2p7q4n8Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
