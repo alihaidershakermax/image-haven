@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Download, Eye, X, ChevronDown } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trackDownload, trackView } from "@/server/images.functions";
+import { trackDownload, trackView } from "@/functions/images.functions";
 import type { GalleryImage } from "@/types/image";
 
 type Res = "original" | "4k" | "hd" | "thumb";

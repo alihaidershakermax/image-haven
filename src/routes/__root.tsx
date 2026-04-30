@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "@/components/ui/sonner";
-import { getSiteSettings } from "@/server/settings.functions";
+import { getSiteSettings } from "@/functions/settings.functions";
 
 import appCss from "../styles.css?url";
 

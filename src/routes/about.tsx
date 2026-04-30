@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Instagram } from "lucide-react";
-import { getAbout } from "@/server/settings.functions";
+import { getAbout } from "@/functions/settings.functions";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
