@@ -4,7 +4,6 @@
   "sideEffects": false,
   "type": "module",
   "version": "1.0.0",
-  "homepage": "https://alihaidershakermax.github.io/image-haven",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
