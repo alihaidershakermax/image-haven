@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { requireDashboard } from "./dashboard-gate";
+import { requireDashboard } from "@/server/dashboard-gate";
 
 // ---------- Site settings ----------
 export const getSiteSettings = createServerFn({ method: "GET" }).handler(async () => {

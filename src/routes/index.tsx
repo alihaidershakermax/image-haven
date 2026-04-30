@@ -4,7 +4,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
-import { listImages, listCategories, getOverallStats } from "@/server/images.functions";
+import { listImages, listCategories, getOverallStats } from "@/functions/images.functions";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { Lightbox } from "@/components/lightbox";
 import type { GalleryImage } from "@/types/image";

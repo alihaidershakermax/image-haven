@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Moon, Sun, Home, Info } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useQuery } from "@tanstack/react-query";
-import { getSiteSettings } from "@/server/settings.functions";
+import { getSiteSettings } from "@/functions/settings.functions";
 
 export function SiteHeader() {
   const { theme, toggle } = useTheme();

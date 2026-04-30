@@ -9,13 +9,13 @@ import {
 import {
   uploadImage, listImagesAdmin, deleteImage, togglePublish,
   listCategories, createCategory, deleteCategory,
-} from "@/server/images.functions";
+} from "@/functions/images.functions";
 import {
   getSiteSettings, updateSiteSettings, getAbout, updateAbout,
-} from "@/server/settings.functions";
+} from "@/functions/settings.functions";
 import {
   checkDashboardSession, dashboardLogin, dashboardLogout, changeDashboardPassword,
-} from "@/server/dashboard-auth.functions";
+} from "@/functions/dashboard-auth.functions";
 
 export const Route = createFileRoute("/__/u-x9k2p7q4n8")({
   head: () => ({
