@@ -125,9 +125,8 @@ export const deleteImage = createServerFn({ method: "POST" })
     if (img?.storage_path) {
       await supabaseAdmin.storage.from("wallpapers").remove([
         `${img.storage_path}/original.jpg`,
-        `${img.storage_path}/4k.jpg`,
-        `${img.storage_path}/hd.jpg`,
-        `${img.storage_path}/thumb.jpg`,
+        `${img.storage_path}/original.png`,
+        `${img.storage_path}/original.webp`,
       ]);
     }
     const { error } = await supabaseAdmin.from("images").delete().eq("id", data.id);
