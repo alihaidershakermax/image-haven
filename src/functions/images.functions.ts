@@ -170,48 +170,28 @@ export const uploadImage = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => uploadSchema.parse(input))
   .handler(async ({ data }) => {
     requireDashboard();
-    const photon = await import("@cf-wasm/photon");
-
     const bytes = decodeBase64(data.imageBase64);
     if (bytes.byteLength > 25 * 1024 * 1024) {
       return { ok: false, error: "Image too large (max 25MB)" };
     }
 
-    const original = photon.PhotonImage.new_from_byteslice(bytes);
-    const origW = original.get_width();
-    const origH = original.get_height();
-
-    const resizeToWidth = (img: any, targetW: number) => {
-      if (origW <= targetW) return img;
-      const ratio = targetW / origW;
-      const newH = Math.round(origH * ratio);
-      return photon.resize(img, targetW, newH, photon.SamplingFilter.Lanczos3);
-    };
-
-    const variants = [
-      { key: "original", img: original, quality: 92 },
-      { key: "4k", img: resizeToWidth(original, 2160), quality: 88 },
-      { key: "hd", img: resizeToWidth(original, 1080), quality: 85 },
-      { key: "thumb", img: resizeToWidth(original, 480), quality: 75 },
-    ] as const;
-
     const slugBase = slugify(data.title) || "wallpaper";
     const id = crypto.randomUUID();
     const folder = `${id}-${slugBase}`.slice(0, 80);
 
-    const urls: Record<string, string> = {};
-    let fileSize = 0;
-    for (const v of variants) {
-      const out = v.img.get_bytes_jpeg(v.quality);
-      const path = `${folder}/${v.key}.jpg`;
-      const { error: upErr } = await supabaseAdmin.storage.from("wallpapers").upload(path, out, {
-        contentType: "image/jpeg", upsert: true, cacheControl: "31536000, immutable",
-      });
-      if (upErr) return { ok: false, error: `Upload failed (${v.key}): ${upErr.message}` };
-      const { data: pub } = supabaseAdmin.storage.from("wallpapers").getPublicUrl(path);
-      urls[v.key] = pub.publicUrl;
-      if (v.key === "original") fileSize = out.byteLength;
-    }
+    // Upload the original file once (no server-side resizing — works on all hosts).
+    const ext = data.mimeType.toLowerCase().includes("png") ? "png"
+      : data.mimeType.toLowerCase().includes("webp") ? "webp" : "jpg";
+    const path = `${folder}/original.${ext}`;
+    const { error: upErr } = await supabaseAdmin.storage.from("wallpapers").upload(path, bytes, {
+      contentType: data.mimeType, upsert: true, cacheControl: "31536000, immutable",
+    });
+    if (upErr) return { ok: false, error: `Upload failed: ${upErr.message}` };
+    const { data: pub } = supabaseAdmin.storage.from("wallpapers").getPublicUrl(path);
+    const publicUrl = pub.publicUrl;
+    const fileSize = bytes.byteLength;
+    // Use the same URL for every resolution slot; client picks "original" for downloads.
+    const urls = { original: publicUrl, "4k": publicUrl, hd: publicUrl, thumb: publicUrl };
 
     let slug = slugBase;
     const { data: existing } = await supabaseAdmin.from("images").select("id").eq("slug", slug).maybeSingle();
@@ -225,7 +205,7 @@ export const uploadImage = createServerFn({ method: "POST" })
       category_id: data.categoryId ?? null,
       url: urls.original, url_4k: urls["4k"], url_hd: urls.hd, url_thumb: urls.thumb,
       thumbnail_url: urls.thumb,
-      width: origW, height: origH,
+      width: 0, height: 0,
       file_size_bytes: fileSize,
       slug, storage_path: folder,
       source: "web", published: true,
