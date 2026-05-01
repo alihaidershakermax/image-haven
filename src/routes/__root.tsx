@@ -38,11 +38,15 @@ export const Route = createRootRoute({
       { title: "Unposed — A Quiet Wallpaper Journal" },
       { name: "description", content: "An editorial collection of unposed moments and quiet wallpapers in 4K, HD and original quality. Free, curated, and beautifully organized." },
       { name: "author", content: "Unposed" },
-      { property: "og:title", content: "Unposed — Editorial Wallpapers" },
-      { property: "og:description", content: "A quiet, editorial collection of wallpapers in 4K and HD." },
+      { property: "og:title", content: "Unposed — A Quiet Wallpaper Journal" },
+      { property: "og:description", content: "An editorial collection of unposed moments and quiet wallpapers in 4K, HD and original quality. Free, curated, and beautifully organized." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#13110f" },
+      { name: "twitter:title", content: "Unposed — A Quiet Wallpaper Journal" },
+      { name: "twitter:description", content: "An editorial collection of unposed moments and quiet wallpapers in 4K, HD and original quality. Free, curated, and beautifully organized." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f9ae3851-d548-4d00-a877-7da26cec79fe/id-preview-2d03cb5a--183067cf-a9bf-443b-bdcd-3429816df22b.lovable.app-1777568589611.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f9ae3851-d548-4d00-a877-7da26cec79fe/id-preview-2d03cb5a--183067cf-a9bf-443b-bdcd-3429816df22b.lovable.app-1777568589611.png" },
     ],
     links: [
       {
